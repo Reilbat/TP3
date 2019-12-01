@@ -2,7 +2,7 @@ import express = require('express')
 import { MetricsHandler } from './metrics'
 import path = require('path')
 import bodyparser = require('body-parser')
-const dbMet: MetricsHandler = new MetricsHandler('./db/metrics')
+
 
 const app = express()
 const port: string = process.env.PORT || '8082'
@@ -22,32 +22,13 @@ app.get('/hello/:name', (req: any, res: any) => {
 })
 
 // app.get('/metrics.json', (req: any, res: any) => {
-//    MetricsHandler.get((err: Error | null, result?: any) => {
-//      if (err) {
-//        throw err
+//   MetricsHandler.get((err: Error | null, result?: any) => {
+//     if (err) {
+//       throw err
 //     }
-//    res.json(result)
+//     res.json(result)
 //   })
-//  })
-
-app.post('/metrics/:id', (req: any, res: any) => {
-
-    dbMet.save(req.params.id, req.body, (err: Error | null) => {
-       if (err) throw err
-       res.status(200).send('ok')
-     })
-   })
-
-app.get('/metrics/:id', (req: any, res: any) => {
-    dbMet.get(req.params.id, (err: Error | null) => {
-     if (err) throw err
-     res.status(200).send('ok')
-  })
- })
-
-  app.use(bodyparser.json()) 
-  app.use(bodyparser.urlencoded())
-
+// })
 
 app.listen(port, (err: Error) => {
   if (err) {
@@ -56,4 +37,23 @@ app.listen(port, (err: Error) => {
   console.log(`Server is running on http://localhost:${port}`)
 })
 
+app.use(bodyparser.json())
+app.use(bodyparser.urlencoded())
+
+const dbMet: MetricsHandler = new MetricsHandler('./db/metrics')
+
+app.post('/metrics/:id', (req: any, res: any) => {
+  
+  dbMet.save(req.params.id, req.body, (err: Error | null) => {
+    if (err) throw err
+    res.status(200).send()
+  })
+})
+
+app.get('/metrics/:id', (req: any, res: any) => {
+  dbMet.get(req.params.id, (err: Error | null) => {
+    if (err) throw err
+    res.status(200).send()
+  })
+})
 
