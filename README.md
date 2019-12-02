@@ -25,3 +25,5 @@ npm run dev
 ```
 
 ## Contributors
+
+LOBA Alexandre

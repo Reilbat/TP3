@@ -57,3 +57,9 @@ app.get('/metrics/:id', (req: any, res: any) => {
   })
 })
 
+app.delete('/metrics/:id', (req: any, res: any) => {
+  dbMet.del(req.params.id, (err: Error | null) => {
+    if (err) throw err
+    res.status(200).send()
+  })
+})

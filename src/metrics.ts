@@ -20,35 +20,46 @@ export class MetricsHandler {
 
     this.db = LevelDB.open(dbPath)
   }
-  public save(
-    key: number, 
-    metrics: Metric[],
-     callback: (error: Error | null) => void) {
-        const stream = WriteStream(this.db)
-        stream.on('error', callback)
-        stream.on('close', callback)
+  public del(key : number, callback: (error: Error | null, result?: Metric[]) => void) {
+    console.log(`\nKey to delete: ${key}\n`)
+    const stream = this.db
+            .createKeyStream()
 
-        metrics.forEach((m: Metric) => {
-          stream.write({ key: `metric:${key}${m.timestamp}`, value: m.value })
-        })
   
-        stream.end()
-      }
-  public get(key: number, callback: (error: Error | null, result?: Metric[]) => void) {
-    const rs = this.db.createReadStream()
-    .on('data', function (data) {
-      key[1]= data.key.split(':')
-      console.log(data.key, '=', data.value)
-    })
-    .on('error', function (err) {
-      console.log('Oh my!', err)
-    })
-    .on('close', function () {
-      console.log('Stream closed')
-    })
-    .on('end', function () {
-      console.log('Stream ended')
+      .on('error',callback)
+      .on('data', data => {
+        if (data.split(":")[2] === key ){
+          this.db.del(data, function (err) {
+          });
+          console.log(`Metrics deleted !`)
+        }
     })
   }
-}
 
+  public save(key: number, metrics: Metric[], callback: (error: Error | null) => void) {
+    const stream = WriteStream(this.db)
+
+    stream.on('error', callback)
+    stream.on('close', callback)
+
+    metrics.forEach((m: Metric) => {
+       stream.write({ key: `metric:${key}:${m.timestamp}`, value: m.value })
+    })
+    stream.end()
+  }
+
+public get(key : number, callback: (error: Error | null, result?: Metric[]) => void) {
+  const stream = this.db.createReadStream()
+  var met: Metric[] = []
+
+  stream.on('error',callback)
+    .on('data', function (data) {
+      const [metrics, name, k]  = data.key.split(":")
+      if (key != k ){
+        console.log(`\nLevelDB error: ${data} does not match key ${key}`)
+      } else {
+        console.log(data.key, ' = ', data.value)
+      }
+    })
+}
+}
